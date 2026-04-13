@@ -1,0 +1,75 @@
+.wplm-wrap {
+	margin: 20px 20px 0 0;
+}
+
+.wplm-card {
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+	padding: 20px;
+	margin-top: 20px;
+}
+
+.wplm-form-table th {
+	width: 200px;
+	text-align: left;
+	padding: 15px 10px;
+}
+
+.wplm-form-table td {
+	padding: 15px 10px;
+}
+
+.wplm-progress-bar-container {
+	background: #eee;
+	border-radius: 4px;
+	height: 20px;
+	width: 100%;
+	margin-top: 10px;
+	overflow: hidden;
+	position: relative;
+}
+
+.wplm-progress-bar-fill {
+	background: #2271b1;
+	height: 100%;
+	width: 0%;
+	transition: width 0.5s ease-in-out;
+}
+
+.wplm-progress-text {
+	position: absolute;
+	width: 100%;
+	text-align: center;
+	font-size: 11px;
+	line-height: 20px;
+	font-weight: bold;
+	color: #000;
+}
+
+.status-badge {
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 11px;
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
+.status-pending { background: #f0f0f1; color: #50575e; }
+.status-processing { background: #d94f1d; color: #fff; }
+.status-completed { background: #6734ba; color: #fff; }
+.status-failed { background: #d63638; color: #fff; }
+
+.wplm-select2-full {
+	width: 100% !important;
+}
+
+.spinner-inline {
+	display: none;
+	vertical-align: middle;
+	margin-left: 10px;
+}
+
+.is-active .spinner-inline {
+	display: inline-block;
+}
