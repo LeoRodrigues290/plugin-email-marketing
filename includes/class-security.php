@@ -42,8 +42,11 @@ final class Security {
 
 	/**
 	 * Descriptografa uma string.
+	 * 
+	 * @param string $encoded
+	 * @return string|false
 	 */
-	public static function decrypt( string $encoded ): string|false {
+	public static function decrypt( string $encoded ) {
 		if ( empty( $encoded ) ) {
 			return '';
 		}
