@@ -13,6 +13,19 @@ class Admin_Menu {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'register_menus' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+		add_action( 'admin_post_wplm_clear_history', array( __CLASS__, 'handle_clear_history' ) );
+	}
+
+	public static function handle_clear_history() {
+		Security::authorize( 'wplm_clear_history_' . get_current_user_id() );
+
+		global $wpdb;
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}leads_campaigns" );
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}leads_mailer_logs" );
+
+		Audit_Log::record( 'history_cleared', 'settings', 0 );
+		wp_safe_redirect( admin_url( 'admin.php?page=wplm-settings&cleared=1' ) );
+		exit;
 	}
 
 	public static function register_menus() {

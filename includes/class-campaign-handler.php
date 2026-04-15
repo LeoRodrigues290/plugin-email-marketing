@@ -194,6 +194,7 @@ class Campaign_Handler {
 			return (int) $campaign_id;
 		} catch ( \Throwable $e ) {
 			$db->rollback();
+			error_log( 'WPLM Error: ' . $e->getMessage() );
 			return 0;
 		}
 	}

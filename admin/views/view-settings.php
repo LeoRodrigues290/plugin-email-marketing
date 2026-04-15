@@ -9,6 +9,10 @@ $opts = \WPLM\SMTP_Config::get_options();
 <div class="wrap wplm-wrap">
 	<h1>Configurações SMTP</h1>
 
+	<?php if ( isset( $_GET['cleared'] ) ) : ?>
+		<div class="updated"><p>Histórico de campanhas e logs limpo com sucesso!</p></div>
+	<?php endif; ?>
+
 	<form method="post" action="">
 		<?php wp_nonce_field( 'wplm_save_smtp_' . get_current_user_id() ); ?>
 		
@@ -99,5 +103,19 @@ $opts = \WPLM\SMTP_Config::get_options();
 			<p id="wplm-import-status">Preparando...</p>
 			<div id="wplm-import-results" style="margin-top:10px; font-size:13px; color:#666;"></div>
 		</div>
+	</div>
+
+	<hr>
+
+	<div class="wplm-card wplm-card-danger">
+		<h3 style="color: #d63638;">Zona de Perigo</h3>
+		<p>Estas ações são permanentes e não podem ser desfeitas.</p>
+		
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return confirm('Tem certeza que deseja apagar TODO o histórico? Esta ação é irreversível.');">
+			<input type="hidden" name="action" value="wplm_clear_history">
+			<?php wp_nonce_field( 'wplm_clear_history_' . get_current_user_id() ); ?>
+			<button type="submit" class="button button-link-delete">Limpar Histórico de Campanhas</button>
+			<p class="description">Isso removerá preventivamente todos os registros da lista de campanhas e logs de envio.</p>
+		</form>
 	</div>
 </div>

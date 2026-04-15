@@ -51,6 +51,7 @@ function wplm_init() {
 	// Carrega as funcionalidades se os requisitos forem atendidos
 	if ( WPLM\Activator::check_requirements( false ) ) {
 		WPLM\Capabilities::init();
+		WPLM\Activator::activate(); // Garante tabelas se ainda não existirem
 		WPLM\CPT_Taxonomy::init();
 		WPLM\SMTP_Config::init();
 		WPLM\Campaign_Handler::init();
