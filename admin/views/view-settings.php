@@ -79,4 +79,25 @@ $opts = \WPLM\SMTP_Config::get_options();
 			</p>
 		</div>
 	</form>
+
+	<hr>
+
+	<div class="wplm-card">
+		<h3>Importar Clientes (CSV)</h3>
+		<p>Suba um arquivo CSV para importar ou atualizar seus contatos. O arquivo deve seguir a ordem do seu antigo banco de dados.</p>
+		
+		<form id="wplm-import-form">
+			<input type="file" id="wplm-csv-file" accept=".csv" required>
+			<button type="submit" class="button button-secondary">Iniciar Importação</button>
+			<?php wp_nonce_field( 'wplm_import_nonce', 'wplm_import_nonce_field' ); ?>
+		</form>
+
+		<div id="wplm-import-progress-container" style="display:none; margin-top:20px;">
+			<div class="wplm-progress-bar">
+				<div id="wplm-import-progress-fill" class="wplm-progress-bar-fill" style="width: 0%;"></div>
+			</div>
+			<p id="wplm-import-status">Preparando...</p>
+			<div id="wplm-import-results" style="margin-top:10px; font-size:13px; color:#666;"></div>
+		</div>
+	</div>
 </div>

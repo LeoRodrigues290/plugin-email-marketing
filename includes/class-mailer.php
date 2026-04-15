@@ -53,6 +53,9 @@ class Mailer {
 		</head>
 		<body>
 			<div class="container">
+				<div class="header">
+					<img src="https://nplace.it/clientes/tavares_site/wp-content/uploads/2025/10/Grupo-de-mascara-2-e1760199450381.png" alt="Header" style="max-width: 100%; height: auto; margin-bottom: 20px;">
+				</div>
 				<?php foreach ( $posts as $post ) : ?>
 					<div class="post">
 						<h2><?php echo esc_html( get_the_title( $post ) ); ?></h2>

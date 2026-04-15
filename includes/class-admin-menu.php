@@ -18,6 +18,34 @@ class Admin_Menu {
 	public static function register_menus() {
 		$cap = Capabilities::CAPABILITY;
 
+		// 1. Menu NOVO: Clientes
+		add_menu_page(
+			'Clientes',
+			'Clientes',
+			$cap,
+			'edit.php?post_type=' . CPT_Taxonomy::POST_TYPE,
+			'',
+			'dashicons-groups',
+			26
+		);
+
+		add_submenu_page(
+			'edit.php?post_type=' . CPT_Taxonomy::POST_TYPE,
+			'Todos os Clientes',
+			'Todos os Clientes',
+			$cap,
+			'edit.php?post_type=' . CPT_Taxonomy::POST_TYPE
+		);
+
+		add_submenu_page(
+			'edit.php?post_type=' . CPT_Taxonomy::POST_TYPE,
+			'Grupos',
+			'Grupos',
+			$cap,
+			'edit-tags.php?taxonomy=' . CPT_Taxonomy::TAXONOMY . '&post_type=' . CPT_Taxonomy::POST_TYPE
+		);
+
+		// 2. Menu Leads (Campanhas)
 		add_menu_page(
 			'Leads Mailer',
 			'Leads',
@@ -46,19 +74,10 @@ class Admin_Menu {
 			array( __CLASS__, 'render_campaign_form' )
 		);
 
-		// Adiciona o CPT Clientes sob o menu Leads
-		add_submenu_page(
-			'wplm-campaigns',
-			'Clientes',
-			'Clientes',
-			$cap,
-			'edit.php?post_type=cliente'
-		);
-
 		add_submenu_page(
 			'wplm-campaigns',
 			'Detalhes da Campanha',
-			'', // Titulo vazio para não aparecer no menu
+			'',
 			$cap,
 			'wplm-campaign-detail',
 			array( __CLASS__, 'render_campaign_detail' )
@@ -75,7 +94,16 @@ class Admin_Menu {
 	}
 
 	public static function enqueue_assets( $hook ) {
-		if ( strpos( $hook, 'wplm-' ) === false && strpos( $hook, 'cliente' ) === false ) {
+		$screens = array( 'wplm-', 'wplm_cliente', 'cliente', 'grupo_cliente' );
+		$match = false;
+		foreach ( $screens as $s ) {
+			if ( strpos( $hook, $s ) !== false ) {
+				$match = true;
+				break;
+			}
+		}
+
+		if ( ! $match ) {
 			return;
 		}
 
@@ -94,7 +122,6 @@ class Admin_Menu {
 	}
 
 	public static function render_campaign_list() {
-		// Lógica de cancelamento
 		if ( isset( $_GET['action'] ) && 'cancel' === $_GET['action'] && isset( $_GET['id'] ) ) {
 			$campaign_id = absint( $_GET['id'] );
 			Security::authorize( 'wplm_cancel_campaign_' . $campaign_id );
@@ -103,7 +130,7 @@ class Admin_Menu {
 			$wpdb->update(
 				$wpdb->prefix . 'leads_campaigns',
 				array( 'status' => 'cancelled' ),
-				array( 'id' => $campaign_id, 'status' => 'pending' ) // Só cancela se pendente
+				array( 'id' => $campaign_id, 'status' => 'pending' )
 			);
 			
 			Audit_Log::record( 'campaign_cancelled', 'campaign', $campaign_id );
@@ -122,14 +149,12 @@ class Admin_Menu {
 	}
 
 	public static function render_settings() {
-		// Processar salvamento via POST
 		if ( isset( $_POST['wplm_save_settings'] ) ) {
 			Security::authorize( 'wplm_save_smtp_' . get_current_user_id() );
 			SMTP_Config::save_options( $_POST );
 			echo '<div class="updated"><p>Configurações salvas com sucesso!</p></div>';
 		}
 
-		// Processar teste de conexão
 		if ( isset( $_POST['wplm_test_smtp'] ) ) {
 			Security::authorize( 'wplm_save_smtp_' . get_current_user_id() );
 			

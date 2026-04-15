@@ -115,7 +115,7 @@ class Campaign_Handler {
 	private static function collect_recipients( array $data ): array {
 		$recipients = array();
 		$args = array(
-			'post_type'      => 'cliente',
+			'post_type'      => CPT_Taxonomy::POST_TYPE,
 			'post_status'    => 'publish',
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
@@ -124,7 +124,7 @@ class Campaign_Handler {
 		if ( 'group' === $data['recipient_type'] ) {
 			$args['tax_query'] = array(
 				array(
-					'taxonomy' => 'grupo_cliente',
+					'taxonomy' => CPT_Taxonomy::TAXONOMY,
 					'field'    => 'term_id',
 					'terms'    => $data['group_id'],
 				),
@@ -136,9 +136,8 @@ class Campaign_Handler {
 		$client_ids = get_posts( $args );
 
 		foreach ( $client_ids as $id ) {
-			// Assume-se que o email está no conteúdo ou em um meta (vamos usar o conteúdo para simplificar o exemplo, mas meta seria melhor)
-			// No WordPress real, geralmente seria um meta field 'email'
-			$email = get_post_meta( $id, 'email', true );
+			// Busca o e-mail no meta field customizado
+			$email = get_post_meta( $id, 'wplm_email', true );
 			if ( ! is_email( $email ) ) {
 				continue;
 			}

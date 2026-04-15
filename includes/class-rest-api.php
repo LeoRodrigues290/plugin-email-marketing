@@ -61,7 +61,7 @@ class REST_API {
 		$page   = max( 1, (int) $request->get_param( 'page' ) );
 
 		$query = new \WP_Query( array(
-			'post_type'      => 'cliente',
+			'post_type'      => CPT_Taxonomy::POST_TYPE,
 			'post_status'    => 'publish',
 			's'              => $search,
 			'posts_per_page' => 20,
@@ -87,7 +87,7 @@ class REST_API {
 	 */
 	public static function search_groups( \WP_REST_Request $request ) {
 		$terms = get_terms( array(
-			'taxonomy'   => 'grupo_cliente',
+			'taxonomy'   => CPT_Taxonomy::TAXONOMY,
 			'hide_empty' => false,
 			'search'     => sanitize_text_field( $request->get_param( 'q' ) ),
 		) );

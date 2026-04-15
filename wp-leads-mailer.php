@@ -3,7 +3,7 @@
  * Plugin Name: WP Leads Mailer
  * Description: Sistema avançado de envio de e-mails para leads com segurança Sodium, processamento em lote e log de auditoria.
  * Version: 3.0.0
- * Author: Antigravity
+ * Author: InkyDigital
  * Text Domain: wp-leads-mailer
  * Domain Path: /languages
  * Requires at least: 6.0
@@ -57,6 +57,7 @@ function wplm_init() {
 		WPLM\Cron_Batch::init();
 		WPLM\REST_API::init();
 		WPLM\Admin_Menu::init();
+		WPLM\Importer::init();
 	}
 }
 add_action( 'plugins_loaded', 'wplm_init' );

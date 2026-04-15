@@ -52,4 +52,4 @@ O plugin segue regras rigorosas de segurança:
 - **Extensões**: Sodium ou OpenSSL (habilitadas na maioria dos servidores modernos).
 
 ---
-*Desenvolvido com foco em segurança e performance por Antigravity.*
+*Desenvolvido com foco em segurança e performance por InkyDigital.*

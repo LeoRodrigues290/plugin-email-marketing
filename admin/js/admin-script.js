@@ -142,4 +142,81 @@ jQuery(document).ready(function($) {
 		$(this).addClass('is-active');
 	});
 
+	// 7. Importador de Clientes (Batching)
+	$('#wplm-import-form').on('submit', function(e) {
+		e.preventDefault();
+		var form = $(this);
+		var fileInput = $('#wplm-csv-file')[0];
+		if (!fileInput.files.length) return;
+
+		var formData = new FormData();
+		formData.append('action', 'wplm_import_upload');
+		formData.append('csv_file', fileInput.files[0]);
+		formData.append('nonce', $('#wplm_import_nonce_field').val());
+
+		form.find('button').prop('disabled', true).text('Fazendo upload...');
+		$('#wplm-import-progress-container').show();
+		$('#wplm-import-status').text('Enviando arquivo...');
+
+		$.ajax({
+			url: wplm.ajax_url,
+			method: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			success: function(response) {
+				if (response.success) {
+					processImportChunk(response.data.file_id, 1, response.data.total_rows, 0, 0, 0);
+				} else {
+					alert('Erro: ' + response.data.message);
+					resetImportForm();
+				}
+			}
+		});
+	});
+
+	function processImportChunk(fileId, lineIndex, total, imported, updated, errors) {
+		$.ajax({
+			url: wplm.ajax_url,
+			method: 'POST',
+			data: {
+				action: 'wplm_import_chunk',
+				file_id: fileId,
+				line_index: lineIndex,
+				nonce: $('#wplm_import_nonce_field').val()
+			},
+			success: function(response) {
+				if (response.success) {
+					var data = response.data;
+					var currentImported = imported + data.imported;
+					var currentUpdated = updated + data.updated;
+					var currentErrors = errors + data.errors;
+					
+					var percent = Math.min(100, Math.round((data.next_line / total) * 100));
+					$('#wplm-import-progress-fill').css('width', percent + '%');
+					$('#wplm-import-status').text('Processando... ' + percent + '%');
+					$('#wplm-import-results').html(
+						'<strong>Sucesso:</strong> ' + currentImported + ' novos, ' + currentUpdated + ' atualizados. ' +
+						'<strong>Falhas:</strong> ' + currentErrors
+					);
+
+					if (!data.is_finished) {
+						processImportChunk(fileId, data.next_line, total, currentImported, currentUpdated, currentErrors);
+					} else {
+						$('#wplm-import-status').text('Importação Concluída!');
+						$('#wplm-import-form').find('button').text('Finalizado');
+					}
+				} else {
+					$('#wplm-import-status').text('Erro no processamento.');
+					alert('Erro no chunk: ' + response.data.message);
+				}
+			}
+		});
+	}
+
+	function resetImportForm() {
+		$('#wplm-import-form').find('button').prop('disabled', false).text('Iniciar Importação');
+		$('#wplm-import-progress-container').hide();
+	}
+
 });
