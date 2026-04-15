@@ -112,7 +112,7 @@ class Admin_Menu {
 		wp_enqueue_script( 'select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array( 'jquery' ), '4.1.0', true );
 
 		wp_enqueue_style( 'wplm-admin-style', WPLM_URL . 'admin/css/admin-style.css', array(), WPLM_VERSION );
-		wp_enqueue_script( 'wplm-admin-script', WPLM_URL . 'admin/js/admin-script.js', array( 'jquery', 'select2' ), WPLM_VERSION, true );
+		wp_enqueue_script( 'wplm-admin-script', WPLM_URL . 'admin/js/admin-script.js', array( 'jquery', 'select2' ), time(), true );
 
 		wp_localize_script( 'wplm-admin-script', 'wplm', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),

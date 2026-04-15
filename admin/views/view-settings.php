@@ -88,7 +88,7 @@ $opts = \WPLM\SMTP_Config::get_options();
 		
 		<form id="wplm-import-form">
 			<input type="file" id="wplm-csv-file" accept=".csv" required>
-			<button type="submit" class="button button-secondary">Iniciar Importação</button>
+			<button type="submit" class="button button-primary">Enviar e Importar CSV</button>
 			<?php wp_nonce_field( 'wplm_import_nonce', 'wplm_import_nonce_field' ); ?>
 		</form>
 

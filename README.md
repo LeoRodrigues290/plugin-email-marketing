@@ -1,55 +1,92 @@
-# WP Leads Mailer v3.0
+# 📧 WP Leads Mailer (v3.0)
 
-O **WP Leads Mailer** é um plugin WordPress projetado para o envio de newsletters segmentadas para leads. Ele oferece um sistema robusto de processamento em lote via WP-Cron, criptografia de ponta e auditoria completa de ações.
+[![Author: InkyDigital](https://img.shields.io/badge/Author-InkyDigital-blue.svg)](https://inkydigital.com.br)
+[![WordPress: 6.0+](https://img.shields.io/badge/WordPress-6.0%2B-blue.svg)](#)
+[![PHP: 7.4+](https://img.shields.io/badge/PHP-7.4%2B-green.svg)](#)
 
-## 🚀 Funcionalidades
+O **WP Leads Mailer** é a solução definitiva e segura para e-mail marketing dentro do seu WordPress. Desenvolvido pela **InkyDigital**, ele combina alta performance de entrega com os mais rigorosos padrões de segurança cibernética.
 
-- **Envio em Lote**: Processamento inteligente via Cron para evitar timeouts no servidor.
-- **Criptografia Sodium**: Proteção de credenciais SMTP usando `libsodium` (com fallback para OpenSSL).
-- **Auditoria Imutável**: Registro detalhado de todas as ações administrativas para conformidade e segurança.
-- **Rate Limiting**: Proteção contra abusos e envios simultâneos excessivos.
-- **Interface Moderna**: Dashboards dinâmicos com Select2 AJAX e barras de progresso em tempo real.
-- **Compatibilidade**: Suporte total desde o PHP 7.4.33 até o PHP 8.4.
+---
 
-## 🏗️ Arquitetura do Sistema
+## 🎨 Design & Funcionalidades
+
+- **💎 Interface Premium**: Dashboards modernos com barras de progresso em tempo real e busca instantânea via Select2.
+- **🚀 Entrega Turbinada**: Sistema de envio em lotes via WP-Cron, evitando sobrecarga do seu servidor SMTP.
+- **📂 Gestão de Clientes**: Menu dedicado para organizar leads em grupos e importar dados em segundos.
+- **🔐 Blindagem de Dados**: Criptografia baseada em Sodium para proteger suas senhas SMTP.
+
+---
+
+## 🏗️ Arquitetura de Alto Nível
 
 ```mermaid
 graph TD
-    A[Usuário Admin] -->|Interface UI| B(Admin Menu / Views)
-    B -->|Criação de Campanha| C(Campaign Handler)
-    C -->|Validação & Rate Limit| D{Camada de Segurança}
-    D -->|Sucesso| E[(Banco de Dados - Campanhas/Logs)]
-    
-    F[WP-Cron] -->|Trigger| G(Cron Batch Processor)
-    G -->|Busca Lote| E
-    G -->|Inicia Envio| H(Mailer Service)
-    H -->|Configura SMTP| I(SMTP Config - PHPMailer Hook)
-    I -->|Descriptografa Senha| J(Security Layer)
-    H -->|Disparo| K[Destinatários]
-    
-    L[Ações Admin] -->|Registro| M[(Audit Log Imutável)]
+    subgraph "Painel Administrativo"
+        A[Admin InkyDigital] -->|Configura| B(SMTP Encrypted)
+        A -->|Importa| C(Clientes CSV)
+        A -->|Dispara| D(Nova Campanha)
+    end
+
+    subgraph "Motor de Processamento"
+        D -->|Fila| E[(Task Queue)]
+        F[WP-Cron Service] -->|Executa Lote 30s| G(Mailer Service)
+        G -->|Consome| E
+    end
+
+    subgraph "Segurança & Audit"
+        G -->|Log Imutável| H[(Audit Trail)]
+        I[Auth Layer] -->|Verify Nonce| A
+    end
+
+    G -->|Enviado| J[Destinatários]
 ```
 
-## 🔒 Protocolos de Segurança
+---
 
-O plugin segue regras rigorosas de segurança:
-1. **Verificação em 3 Camadas**: `Autenticação` -> `Capacidade (wplm_manage)` -> `Nonce único` para cada ação.
-2. **Proteção de Dados**: Senhas SMTP nunca são exibidas ou logadas em texto claro. São limpas da memória imediatamente após o uso (`sodium_memzero`).
-3. **Imutabilidade**: A tabela de logs de auditoria não permite `UPDATE` ou `DELETE`.
-4. **Sanitização Extrema**: Todo input passa por whitelist e sanitização; todo output é escapado conforme o contexto (`esc_html`, `esc_attr`, `wp_kses`).
+## 📖 Guia de Uso Passo a Passo
 
-## 🛠️ Instalação
+### 1️⃣ Configuração SMTP
+Navegue até **Leads > Configurações**. 
+Insira suas credenciais (Host, Porta, Usuário e Senha). 
+> [!TIP]
+> Use o botão **"Testar Conexão"** para garantir que tudo está ok antes de disparar para sua lista.
 
-1. Suba a pasta `wp-leads-mailer` para o diretório `/wp-content/plugins/`.
-2. Ative o plugin no painel administrativo do WordPress.
-3. Configure seu servidor de e-mail em **Leads > Configurações**.
-4. Comece a criar campanhas em **Leads > Novo Envio**.
+### 2️⃣ Gestão & Importação de Clientes
+Acesse o menu **Clientes**. Você pode adicionar manualmente ou utilizar o **Importador de CSV** nas configurações.
+- O importador processa em lotes, ideal para listas de milhares de contatos.
+- Identifica duplicatas automaticamente pelo e-mail.
 
-## 📄 Requisitos
+### 3️⃣ Criando sua Primeira Campanha
+Vá em **Leads > Novo Envio**.
+1. **Escolha os Destinatários**: Selecionando grupos específicos ou clientes individuais.
+2. **Selecione o Conteúdo**: Filtre as notícias/posts do seu site que deseja enviar.
+3. **Dispare**: O sistema cuidará do resto em segundo plano.
 
-- **PHP**: 7.4 ou superior.
-- **WordPress**: 6.0 ou superior.
-- **Extensões**: Sodium ou OpenSSL (habilitadas na maioria dos servidores modernos).
+### 4️⃣ Acompanhamento
+Na aba **Campanhas**, você verá uma barra de progresso em tempo real. O plugin enviará os e-mails gradualmente para manter o "saúde" do seu IP de envio.
 
 ---
-*Desenvolvido com foco em segurança e performance por InkyDigital.*
+
+## 🔒 Segurança em Primeiro Lugar
+
+| Recurso | Descrição |
+| :--- | :--- |
+| **Nonce Único** | Proteção contra ataques CSRF em cada ação. |
+| **Audit Log** | Registro imutável de quem enviou o quê e quando. |
+| **Sodium Crypto** | Padrão militar para armazenamento de senhas. |
+| **Capability** | Apenas usuários com `wplm_manage` acessam o plugin. |
+
+---
+
+## 🛠️ Requisitos Técnicos
+
+- **PHP**: 7.4 ou 8.x (Totalmente compatível com PHP 8.4)
+- **Extensões**: Libsodium ou OpenSSL habilitado.
+
+---
+<div align="center">
+    <p><i>Desenvolvido com excelência por</i></p>
+    <img src="https://nplace.it/clientes/tavares_site/wp-content/uploads/2025/10/Grupo-de-mascara-2-e1760199450381.png" width="300" alt="InkyDigital Header">
+    <br>
+    <strong>InkyDigital - Soluções Inteligentes</strong>
+</div>

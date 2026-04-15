@@ -145,18 +145,24 @@ jQuery(document).ready(function($) {
 	// 7. Importador de Clientes (Batching)
 	$('#wplm-import-form').on('submit', function(e) {
 		e.preventDefault();
-		var form = $(this);
 		var fileInput = $('#wplm-csv-file')[0];
-		if (!fileInput.files.length) return;
+		if (!fileInput.files.length) {
+			alert('Por favor, selecione um arquivo CSV primeiro.');
+			return;
+		}
 
 		var formData = new FormData();
 		formData.append('action', 'wplm_import_upload');
 		formData.append('csv_file', fileInput.files[0]);
 		formData.append('nonce', $('#wplm_import_nonce_field').val());
 
-		form.find('button').prop('disabled', true).text('Fazendo upload...');
+		startImport(formData);
+	});
+
+	function startImport(formData) {
+		$('#wplm-import-form').find('button').prop('disabled', true);
 		$('#wplm-import-progress-container').show();
-		$('#wplm-import-status').text('Enviando arquivo...');
+		$('#wplm-import-status').text('Preparando importação...');
 
 		$.ajax({
 			url: wplm.ajax_url,
@@ -166,14 +172,18 @@ jQuery(document).ready(function($) {
 			contentType: false,
 			success: function(response) {
 				if (response.success) {
-					processImportChunk(response.data.file_id, 1, response.data.total_rows, 0, 0, 0);
+					processImportChunk(response.data.file_id, 0, response.data.total_rows, 0, 0, 0);
 				} else {
 					alert('Erro: ' + response.data.message);
 					resetImportForm();
 				}
+			},
+			error: function() {
+				alert('Erro de comunicação com o servidor. Verifique os logs.');
+				resetImportForm();
 			}
 		});
-	});
+	}
 
 	function processImportChunk(fileId, lineIndex, total, imported, updated, errors) {
 		$.ajax({

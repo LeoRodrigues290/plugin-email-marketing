@@ -52,13 +52,15 @@ class Importer {
 			}
 			fclose( $handle );
 
+			$has_header = isset( $_POST['has_header'] ) && '1' === $_POST['has_header'];
+
 			wp_send_json_success( array(
 				'file_id'    => $filename,
-				'total_rows' => max( 0, $line_count - 1 ), // subtrai header
+				'total_rows' => $has_header ? max( 0, $line_count - 1 ) : $line_count, 
 			) );
 		}
 
-		wp_send_json_error( array( 'message' => 'Falha ao salvar arquivo temporário.' ) );
+		wp_send_json_error( array( 'message' => 'Falha ao salvar arquivo.' ) );
 	}
 
 	/**
@@ -71,8 +73,8 @@ class Importer {
 			wp_send_json_error( array( 'message' => 'Não autorizado.' ) );
 		}
 
-		$filename = isset( $_POST['file_id'] ) ? sanitize_file_name( $_POST['file_id'] ) : '';
-		$line_index = isset( $_POST['line_index'] ) ? intval( $_POST['line_index'] ) : 1; // Começa na 1 (pula header)
+		$filename   = isset( $_POST['file_id'] ) ? sanitize_file_name( $_POST['file_id'] ) : '';
+		$line_index = isset( $_POST['line_index'] ) ? intval( $_POST['line_index'] ) : 0;
 		
 		$upload_dir = wp_upload_dir();
 		$file_path  = $upload_dir['basedir'] . '/wplm-imports/' . $filename;
@@ -84,10 +86,6 @@ class Importer {
 		$handle = fopen( $file_path, 'r' );
 		$batch_size = 30;
 		$current_line = 0;
-		
-		// Pula header
-		fgetcsv( $handle );
-		$current_line++;
 
 		// Pula para a linha desejada
 		while ( $current_line < $line_index && ! feof( $handle ) ) {
@@ -101,34 +99,38 @@ class Importer {
 		$errors = 0;
 
 		while ( $processed < $batch_size && ( $row = fgetcsv( $handle ) ) !== false ) {
-			if ( empty( $row ) || count( $row ) < 4 ) {
+			// Ignora linhas completamente vazias
+			if ( empty( $row ) || ( count( $row ) === 1 && trim( $row[0] ) === '' ) ) {
 				$processed++;
 				$current_line++;
 				continue;
 			}
 
-			// Mapeamento baseado no clientes.sql
-			// (id, nome, empresa, email, whatsapp, grupo, endereco, telefone, ramal)
+			// Formato phpMyAdmin: id, nome, empresa, email, whatsapp, grupo, endereco, telefone, ramal
 			$data = array(
-				'nome'     => $row[1] ?? '',
-				'empresa'  => $row[2] ?? '',
-				'email'    => $row[3] ?? '',
-				'whatsapp' => $row[4] ?? '',
-				'grupo'    => $row[5] ?? '',
-				'endereco' => $row[6] ?? '',
-				'telefone' => $row[7] ?? '',
-				'ramal'    => $row[8] ?? '',
+				'nome'     => isset( $row[1] ) ? trim( $row[1] ) : '',
+				'empresa'  => isset( $row[2] ) && 'NULL' !== $row[2] ? trim( $row[2] ) : '',
+				'email'    => isset( $row[3] ) && 'NULL' !== $row[3] ? trim( $row[3] ) : '',
+				'whatsapp' => isset( $row[4] ) ? trim( $row[4] ) : '',
+				'grupo'    => isset( $row[5] ) ? trim( $row[5] ) : '',
+				'endereco' => isset( $row[6] ) && 'NULL' !== $row[6] ? trim( $row[6] ) : '',
+				'telefone' => isset( $row[7] ) && 'NULL' !== $row[7] ? trim( $row[7] ) : '',
+				'ramal'    => isset( $row[8] ) && 'NULL' !== $row[8] ? trim( $row[8] ) : '',
 			);
 
-			if ( is_email( $data['email'] ) ) {
-				$res = self::process_client( $data );
-				if ( 'imported' === $res ) {
-					$imported++;
-				} elseif ( 'updated' === $res ) {
-					$updated++;
-				} else {
-					$errors++;
-				}
+			// Obrigatório somente: nome
+			if ( empty( $data['nome'] ) ) {
+				$errors++;
+				$processed++;
+				$current_line++;
+				continue;
+			}
+
+			$res = self::process_client( $data );
+			if ( 'imported' === $res ) {
+				$imported++;
+			} elseif ( 'updated' === $res ) {
+				$updated++;
 			} else {
 				$errors++;
 			}
@@ -159,15 +161,18 @@ class Importer {
 	private static function process_client( $data ) {
 		global $wpdb;
 
-		// Busca por e-mail nos meta fields
-		$existing_id = $wpdb->get_var( $wpdb->prepare(
-			"SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'wplm_email' AND meta_value = %s",
-			$data['email']
-		) );
+		// Busca por e-mail nos meta fields (somente se tiver e-mail)
+		$existing_id = null;
+		if ( ! empty( $data['email'] ) && is_email( $data['email'] ) ) {
+			$existing_id = $wpdb->get_var( $wpdb->prepare(
+				"SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'wplm_email' AND meta_value = %s",
+				$data['email']
+			) );
+		}
 
 		if ( $existing_id ) {
-			$post_id = $existing_id;
-			$status = 'updated';
+			$post_id = (int) $existing_id;
+			$status  = 'updated';
 		} else {
 			$post_id = wp_insert_post( array(
 				'post_title'  => sanitize_text_field( $data['nome'] ),
