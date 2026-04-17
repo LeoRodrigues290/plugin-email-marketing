@@ -63,8 +63,8 @@ class Mailer {
 		<body style="font-family: sans-serif; line-height: 1.6; color: #333; background-color: #f9f9f9; margin: 0; padding: 0;">
 			<div class="container" style="max-width: 600px; margin: 20px auto; background-color: #fff; padding: 20px; border: 1px solid #ddd;">
 				<div class="header" style="text-align: center; margin-bottom: 30px;">
-					<img src="cid:wplm_logo" alt="Logo" width="170" style="display: block; margin: 0 auto 10px; width: 170px; height: auto;">
-					<img src="cid:wplm_banner" alt="Banner" style="display: block; margin: 0 auto 10px; max-width: 100%; height: auto;">
+					<img src="cid:wplm_logo" alt="Logo" width="200" style="display: block; margin: 0 auto 10px; width: 200px; height: auto;">
+					<img src="cid:wplm_banner" alt="Banner" width="500" style="display: block; margin: 0 auto 10px; width: 500px; height: auto;">
 				</div>
 
 				<div class="section-title" style="text-align: center; font-weight: bold; color: #000; margin: 30px 0 20px; text-transform: uppercase; font-size: 18px;">Últimas Notícias:</div>

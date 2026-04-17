@@ -81,7 +81,7 @@ jQuery(document).ready(function($) {
 			cache: true
 		},
 		placeholder: 'Buscar notícias...',
-		minimumInputLength: 1,
+		minimumInputLength: 0,
 		multiple: true
 	});
 

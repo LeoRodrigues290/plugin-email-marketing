@@ -110,15 +110,20 @@ class REST_API {
 		$search = sanitize_text_field( $request->get_param( 'q' ) );
 		$page   = max( 1, (int) $request->get_param( 'page' ) );
 
-		$query = new \WP_Query( array(
+		$query_args = array(
 			'post_type'      => 'noticia',
 			'post_status'    => 'publish',
 			'orderby'        => 'date',
 			'order'          => 'DESC',
-			's'              => $search,
-			'posts_per_page' => 20,
+			'posts_per_page' => empty( $search ) ? 5 : 20,
 			'paged'          => $page,
-		) );
+		);
+
+		if ( ! empty( $search ) ) {
+			$query_args['s'] = $search;
+		}
+
+		$query = new \WP_Query( $query_args );
 
 		$results = array();
 		foreach ( $query->posts as $post ) {
