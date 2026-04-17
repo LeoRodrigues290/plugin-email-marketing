@@ -60,13 +60,31 @@ class REST_API {
 		$search = sanitize_text_field( $request->get_param( 'q' ) );
 		$page   = max( 1, (int) $request->get_param( 'page' ) );
 
-		$query = new \WP_Query( array(
+		$query_args = array(
 			'post_type'      => CPT_Taxonomy::POST_TYPE,
 			'post_status'    => 'publish',
-			's'              => $search,
 			'posts_per_page' => 20,
 			'paged'          => $page,
-		) );
+		);
+
+		if ( ! empty( $search ) ) {
+			$query_args['s'] = $search;
+			
+			$orderby_callback = function( $orderby, $query ) use ( $search ) {
+				global $wpdb;
+				$search_esc = $wpdb->esc_like( $search );
+				$new_orderby = "CASE 
+					WHEN {$wpdb->prefix}posts.post_title LIKE '{$search_esc}%' THEN 1 
+					ELSE 2 
+				END ASC, {$wpdb->prefix}posts.post_date DESC";
+				return $new_orderby;
+			};
+			add_filter( 'posts_orderby', $orderby_callback, 10, 2 );
+			$query = new \WP_Query( $query_args );
+			remove_filter( 'posts_orderby', $orderby_callback );
+		} else {
+			$query = new \WP_Query( $query_args );
+		}
 
 		$results = array();
 		foreach ( $query->posts as $post ) {
@@ -107,7 +125,7 @@ class REST_API {
 	 * Busca posts (notícias).
 	 */
 	public static function search_posts( \WP_REST_Request $request ) {
-		$search = sanitize_text_field( $request->get_param( 'q' ) );
+		$search = $request->get_param( 'q' );
 		$page   = max( 1, (int) $request->get_param( 'page' ) );
 
 		$query_args = array(
@@ -115,15 +133,31 @@ class REST_API {
 			'post_status'    => 'publish',
 			'orderby'        => 'date',
 			'order'          => 'DESC',
-			'posts_per_page' => empty( $search ) ? 5 : 20,
-			'paged'          => $page,
 		);
 
-		if ( ! empty( $search ) ) {
-			$query_args['s'] = $search;
+		if ( empty( $search ) ) {
+			$query_args['posts_per_page'] = 5;
+			$query_args['paged']          = 1;
+			$query = new \WP_Query( $query_args );
+		} else {
+			$query_args['s']              = sanitize_text_field( $search );
+			$query_args['posts_per_page'] = 20;
+			$query_args['paged']          = $page;
+			
+			// Filtro temporário para priorizar "começa com"
+			$orderby_callback = function( $orderby, $query ) use ( $search ) {
+				global $wpdb;
+				$search_esc = $wpdb->esc_like( $search );
+				$new_orderby = "CASE 
+					WHEN {$wpdb->prefix}posts.post_title LIKE '{$search_esc}%' THEN 1 
+					ELSE 2 
+				END ASC, {$wpdb->prefix}posts.post_date DESC";
+				return $new_orderby;
+			};
+			add_filter( 'posts_orderby', $orderby_callback, 10, 2 );
+			$query = new \WP_Query( $query_args );
+			remove_filter( 'posts_orderby', $orderby_callback );
 		}
-
-		$query = new \WP_Query( $query_args );
 
 		$results = array();
 		foreach ( $query->posts as $post ) {

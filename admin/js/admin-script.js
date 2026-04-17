@@ -65,7 +65,7 @@ jQuery(document).ready(function($) {
 			},
 			data: function(params) {
 				return {
-					q: params.term,
+					q: params.term || '',
 					page: params.page || 1
 				};
 			},
@@ -82,10 +82,23 @@ jQuery(document).ready(function($) {
 		},
 		placeholder: 'Buscar notícias...',
 		minimumInputLength: 0,
-		multiple: true
+		multiple: true,
+		width: '100%'
 	});
 
-	// 4. Alternância de campos baseado no tipo de destinatário
+	// 4. Forçar busca ao abrir Select2 de Notícias (para mostrar as 5 últimas)
+	$('.wplm-select-posts').on('select2:open', function() {
+		var $select = $(this);
+		if ($select.val() === null || $select.val().length === 0) {
+			// Trigger search with empty string to get latest 5
+			var $search = $('.select2-search__field');
+			if ($search.length > 0) {
+				$search.val('').trigger('input');
+			}
+		}
+	});
+
+	// 5. Alternância de campos baseado no tipo de destinatário
 	$('input[name="recipient_type"]').on('change', function() {
 		var type = $(this).val();
 		if (type === 'group') {
