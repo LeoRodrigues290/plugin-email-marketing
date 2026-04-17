@@ -46,8 +46,9 @@ class Mailer {
 
 		$posts = get_posts( array(
 			'post__in'       => $post_ids,
-			'orderby'        => 'post__in',
-			'post_type'      => 'post',
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'post_type'      => 'noticia',
 			'post_status'    => 'publish',
 			'posts_per_page' => 20,
 		) );

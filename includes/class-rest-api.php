@@ -111,8 +111,10 @@ class REST_API {
 		$page   = max( 1, (int) $request->get_param( 'page' ) );
 
 		$query = new \WP_Query( array(
-			'post_type'      => 'post',
+			'post_type'      => 'noticia',
 			'post_status'    => 'publish',
+			'orderby'        => 'date',
+			'order'          => 'DESC',
 			's'              => $search,
 			'posts_per_page' => 20,
 			'paged'          => $page,
