@@ -171,11 +171,26 @@ class Admin_Menu {
 		if ( isset( $_POST['wplm_test_smtp'] ) ) {
 			Security::authorize( 'wplm_save_smtp_' . get_current_user_id() );
 			
+			// Busca as 3 últimas notícias para o teste
+			$test_posts = get_posts( array(
+				'post_type'      => 'noticia',
+				'post_status'    => 'publish',
+				'posts_per_page' => 3,
+				'fields'         => 'ids',
+			) );
+
+			$html_body = Mailer::build_campaign_body( $test_posts );
+			
+			// Fallback caso não existam notícias
+			if ( empty( $html_body ) ) {
+				$html_body = '<h1>Teste de Conexão SMTP</h1><p>E-mail enviado com sucesso, porém nenhuma notícia do tipo "noticia" foi encontrada para compor o template real.</p>';
+			}
+
 			$admin_email = get_option( 'admin_email' );
 			$success = Mailer::send( 
 				$admin_email, 
 				'Teste de Conexão SMTP - WP Leads Mailer', 
-				'<p>Este é um e-mail de teste enviado para validar suas configurações SMTP.</p>' 
+				$html_body
 			);
 
 			if ( $success ) {

@@ -59,30 +59,111 @@ class Mailer {
 		<html lang="pt-BR">
 		<head>
 			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Newsletter</title>
+			<style type="text/css">
+				body {
+					margin: 0 !important;
+					padding: 0 !important;
+					width: 100% !important;
+					-webkit-text-size-adjust: 100% !important;
+					-ms-text-size-adjust: 100% !important;
+					-webkit-font-smoothing: antialiased !important;
+				}
+				table {
+					border-spacing: 0;
+					border-collapse: collapse;
+					mso-table-lspace: 0pt;
+					mso-table-rspace: 0pt;
+				}
+				table td {
+					border-collapse: collapse;
+				}
+				img {
+					-ms-interpolation-mode: bicubic;
+				}
+				@media screen and (max-width: 600px) {
+					.responsive-table {
+						width: 100% !important;
+						max-width: 100% !important;
+					}
+					.responsive-image {
+						width: 100% !important;
+						height: auto !important;
+						max-width: 100% !important;
+					}
+					.content-cell {
+						padding: 15px !important;
+					}
+				}
+			</style>
 		</head>
-		<body style="font-family: sans-serif; line-height: 1.6; color: #333; background-color: #f9f9f9; margin: 0; padding: 0;">
-			<div class="container" style="max-width: 600px; margin: 20px auto; background-color: #fff; padding: 20px; border: 1px solid #ddd;">
-				<div class="header" style="text-align: center; margin-bottom: 30px;">
-					<img src="cid:wplm_logo" alt="Logo" width="200" style="display: block; margin: 0 auto 10px; width: 200px; height: auto;">
-					<img src="cid:wplm_banner" alt="Banner" width="500" style="display: block; margin: 0 auto 10px; width: 500px; height: auto;">
-				</div>
+		<body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333333; background-color: #f9f9f9; margin: 0; padding: 0;">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f9f9f9; width: 100%; margin: 0; padding: 0;">
+				<tr>
+					<td align="center" style="padding: 20px 10px;">
+						<!--[if mso]>
+						<table width="600" border="0" cellpadding="0" cellspacing="0" align="center">
+						<tr>
+						<td align="center">
+						<![endif]-->
+						<table border="0" cellpadding="0" cellspacing="0" width="100%" class="responsive-table" style="max-width: 600px; background-color: #ffffff; border: 1px solid #dddddd; margin: 0 auto;">
+							<tr>
+								<td align="center" class="content-cell" style="padding: 20px 30px;">
+									<!-- Header -->
+									<table border="0" cellpadding="0" cellspacing="0" width="100%">
+										<tr>
+											<td align="center" style="padding-bottom: 25px; text-align: center;">
+												<img src="cid:wplm_logo" alt="Logo" width="200" style="display: block; width: 200px; max-width: 200px; margin: 0 auto; border: 0; outline: none; text-decoration: none;">
+											</td>
+										</tr>
+										<tr>
+											<td align="center" style="padding-bottom: 40px; text-align: center;">
+												<img src="cid:wplm_banner" alt="Banner" width="500" class="responsive-image" style="display: block; margin: 0 auto; border: 0; outline: none; text-decoration: none; width: 100%; max-width: 500px; height: auto;">
+											</td>
+										</tr>
+										<tr>
+											<td align="center" style="padding-bottom: 20px; text-align: center;">
+												<h2 style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-weight: bold; color: #444444; font-size: 14px; text-transform: none;">Últimas notícias:</h2>
+											</td>
+										</tr>
+										<?php foreach ( $posts as $post ) : ?>
+										<tr>
+											<td align="center" style="padding-bottom: 15px; text-align: center;">
+												<a href="<?php echo esc_url( get_permalink( $post ) ); ?>" style="color: #967841; text-decoration: none; font-weight: 400; font-size: 12px; font-family: Arial, Helvetica, sans-serif;">
+													<?php echo esc_html( get_the_title( $post ) ); ?>
+												</a>
+											</td>
+										</tr>
+										<?php endforeach; ?>
+									</table>
+								</td>
+							</tr>
+						</table>
+						<!--[if mso]>
+						</td>
+						</tr>
+						</table>
+						<![endif]-->
 
-				<div class="section-title" style="text-align: center; font-weight: bold; color: #000; margin: 30px 0 20px; text-transform: uppercase; font-size: 18px;">Últimas Notícias:</div>
-
-				<div class="news-list" style="list-style: none; padding: 0; margin: 0; text-align: center;">
-					<?php foreach ( $posts as $post ) : ?>
-						<div class="news-item" style="margin-bottom: 15px;">
-							<a href="<?php echo esc_url( get_permalink( $post ) ); ?>" style="color: #967841; text-decoration: none; font-weight: bold; font-size: 16px;">
-								<?php echo esc_html( get_the_title( $post ) ); ?>
-							</a>
-						</div>
-					<?php endforeach; ?>
-				</div>
-
-				<div class="footer" style="font-size: 12px; color: #777; margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
-					<p>Você recebeu este e-mail porque faz parte da nossa lista de contatos.</p>
-				</div>
-			</div>
+						<!-- External Footer -->
+						<table border="0" cellpadding="0" cellspacing="0" width="100%" class="responsive-table" style="max-width: 600px; margin: 0 auto;">
+							<tr>
+								<td align="center" style="padding: 20px 20px 40px 20px; text-align: center;">
+									<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #999999; text-align: center;">
+										Emmendorfer e Tavares - Advogados Associados © <?php echo date( 'Y' ); ?>
+									</p>
+								</td>
+							</tr>
+						</table>
+						<!--[if mso]>
+						</td>
+						</tr>
+						</table>
+						<![endif]-->
+					</td>
+				</tr>
+			</table>
 		</body>
 		</html>
 		<?php
