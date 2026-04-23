@@ -114,7 +114,14 @@ class Mailer {
 									<table border="0" cellpadding="0" cellspacing="0" width="100%">
 										<tr>
 											<td align="center" style="padding-bottom: 25px; text-align: center;">
-												<img src="cid:wplm_logo" alt="Logo" width="200" style="display: block; width: 200px; max-width: 200px; margin: 0 auto; border: 0; outline: none; text-decoration: none;">
+												<!-- Tabela auxiliar para manter a logo centralizada mesmo se o CSS (margin: 0 auto) for removido (Ex: Caixa de Spam) -->
+												<table align="center" border="0" cellpadding="0" cellspacing="0" width="200" style="margin: 0 auto;">
+													<tr>
+														<td align="center">
+															<img src="cid:wplm_logo" alt="Logo" width="200" style="display: block; width: 200px; max-width: 200px; height: auto; margin: 0 auto; border: 0; outline: none; text-decoration: none;">
+														</td>
+													</tr>
+												</table>
 											</td>
 										</tr>
 										<tr>
