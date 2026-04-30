@@ -164,12 +164,24 @@ class Admin_Menu {
 	public static function render_settings() {
 		if ( isset( $_POST['wplm_save_settings'] ) ) {
 			Security::authorize( 'wplm_save_smtp_' . get_current_user_id() );
-			SMTP_Config::save_options( $_POST );
-			echo '<div class="updated"><p>Configurações salvas com sucesso!</p></div>';
+			try {
+				SMTP_Config::save_options( $_POST );
+				echo '<div class="updated"><p>Configurações salvas com sucesso!</p></div>';
+			} catch ( \Throwable $e ) {
+				echo '<div class="error"><p><strong>Erro Crítico ao Salvar:</strong> ' . esc_html( $e->getMessage() ) . '</p><p>Verifique a versão do PHP ou módulos instalados no novo servidor.</p></div>';
+			}
 		}
 
 		if ( isset( $_POST['wplm_test_smtp'] ) ) {
 			Security::authorize( 'wplm_save_smtp_' . get_current_user_id() );
+			
+			// Salva as configurações antes de testar para usar os dados preenchidos no momento
+			try {
+				SMTP_Config::save_options( $_POST );
+			} catch ( \Throwable $e ) {
+				echo '<div class="error"><p><strong>Erro Crítico ao Salvar Senha:</strong> ' . esc_html( $e->getMessage() ) . '</p></div>';
+				return; // Aborta o teste se falhou ao salvar
+			}
 			
 			// Busca as 3 últimas notícias para o teste
 			$test_posts = get_posts( array(
@@ -187,17 +199,69 @@ class Admin_Menu {
 			}
 
 			$admin_email = get_option( 'admin_email' );
+
+			// Hook temporário para capturar erros detalhados do wp_mail() / PHPMailer
+			global $wplm_last_mail_error;
+			$wplm_last_mail_error = null;
+			$error_logger = function( $wp_error ) {
+				global $wplm_last_mail_error;
+				$wplm_last_mail_error = $wp_error;
+			};
+			add_action( 'wp_mail_failed', $error_logger );
+
+			// Hook temporário para capturar log detalhado do SMTP (Debug)
+			global $wplm_smtp_debug;
+			$wplm_smtp_debug = '';
+			$debug_logger = function( $phpmailer ) {
+				$phpmailer->SMTPDebug = 3; // Log completo de conexão e dados
+				$phpmailer->Debugoutput = function( $str, $level ) {
+					global $wplm_smtp_debug;
+					$wplm_smtp_debug .= esc_html( $str ) . "\n";
+				};
+			};
+			add_action( 'phpmailer_init', $debug_logger, 999 );
+
 			$success = Mailer::send( 
 				$admin_email, 
 				'Teste de Conexão SMTP - WP Leads Mailer', 
 				$html_body
 			);
 
+			remove_action( 'wp_mail_failed', $error_logger );
+			remove_action( 'phpmailer_init', $debug_logger, 999 );
+
 			if ( $success ) {
 				Audit_Log::record( 'smtp_test_sent', 'settings', 0, array( 'to' => $admin_email ) );
-				echo '<div class="updated"><p>E-mail de teste enviado com sucesso para ' . esc_html( $admin_email ) . '!</p></div>';
+				echo '<div class="updated" style="padding-bottom: 10px;">';
+				echo '<p><strong>E-mail de teste processado pelo WordPress com sucesso para ' . esc_html( $admin_email ) . '!</strong></p>';
+				echo '<p>Se o e-mail não chegar na sua caixa de entrada, verifique o log de conexão abaixo para ver se o servidor SMTP bloqueou silenciosamente ou se está usando a função padrão de mail() do servidor em vez do SMTP.</p>';
+				if ( ! empty( $wplm_smtp_debug ) ) {
+					echo '<p><strong>Log de Conexão SMTP (Sucesso):</strong></p>';
+					echo '<pre style="background: #fff; padding: 10px; border: 1px solid #ccc; max-width: 100%; overflow: auto; max-height: 300px;">' . wp_kses_post( $wplm_smtp_debug ) . '</pre>';
+				} else {
+					echo '<p style="color:#d63638;"><strong>AVISO:</strong> O log SMTP está vazio! Isso indica que as configurações SMTP (Host ou Senha) não foram carregadas corretamente e o WordPress tentou enviar usando a função de e-mail padrão do servidor de hospedagem (que geralmente não funciona).</p>';
+				}
+				echo '</div>';
 			} else {
-				echo '<div class="error"><p>Falha no envio do e-mail de teste. Verifique suas configurações SMTP.</p></div>';
+				$error_msg = 'Falha desconhecida no wp_mail().';
+				if ( is_wp_error( $wplm_last_mail_error ) ) {
+					$error_msg = $wplm_last_mail_error->get_error_message();
+				}
+				
+				echo '<div class="error" style="padding-bottom: 10px;">';
+				echo '<p><strong>Falha no envio do e-mail de teste.</strong> Verifique suas configurações SMTP.</p>';
+				echo '<p><strong>Motivo / Log de Erro:</strong> <code style="color: #d63638;">' . esc_html( $error_msg ) . '</code></p>';
+				
+				if ( ! empty( $wplm_smtp_debug ) ) {
+					echo '<p><strong>Log de Conexão SMTP (Falha):</strong></p>';
+					echo '<pre style="background: #fff; padding: 10px; border: 1px solid #ccc; max-width: 100%; overflow: auto; max-height: 300px;">' . wp_kses_post( $wplm_smtp_debug ) . '</pre>';
+				}
+				
+				if ( is_wp_error( $wplm_last_mail_error ) && $wplm_last_mail_error->get_error_data() ) {
+					echo '<p><strong>Detalhes Técnicos:</strong></p>';
+					echo '<pre style="background: #fff; padding: 10px; border: 1px solid #ccc; overflow: auto;">' . esc_html( print_r( $wplm_last_mail_error->get_error_data(), true ) ) . '</pre>';
+				}
+				echo '</div>';
 			}
 		}
 

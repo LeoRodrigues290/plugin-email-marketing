@@ -29,7 +29,7 @@ final class Security {
 		if ( function_exists( 'sodium_crypto_secretbox' ) ) {
 			$nonce  = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
 			$cipher = sodium_crypto_secretbox( $plaintext, $nonce, self::get_key() );
-			sodium_memzero( $plaintext );
+			try { sodium_memzero( $plaintext ); } catch ( \Throwable $e ) {}
 			return base64_encode( $nonce . $cipher );
 		}
 

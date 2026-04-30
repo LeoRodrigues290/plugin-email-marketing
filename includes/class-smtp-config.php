@@ -45,7 +45,7 @@ class SMTP_Config {
 		$phpmailer->setFrom( $from_email, $from_name );
 
 		if ( function_exists( 'sodium_memzero' ) ) {
-			sodium_memzero( $password );
+			try { sodium_memzero( $password ); } catch ( \Throwable $e ) {}
 		}
 	}
 

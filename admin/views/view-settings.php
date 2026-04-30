@@ -55,6 +55,9 @@ $opts = \WPLM\SMTP_Config::get_options();
 					<th><label for="smtp_password">Senha SMTP</label></th>
 					<td>
 						<input name="smtp_password" type="password" id="smtp_password" value="" class="regular-text" placeholder="Deixe em branco para manter a atual" autocomplete="new-password">
+						<?php if ( ! empty( $opts['password'] ) ) : ?>
+							<p class="description" style="color: #008a20;"><strong>&check; Uma senha já está salva de forma segura.</strong> Preencha este campo novamente apenas se precisar alterar a senha.</p>
+						<?php endif; ?>
 					</td>
 				</tr>
 
