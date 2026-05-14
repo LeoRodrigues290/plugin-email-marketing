@@ -37,9 +37,13 @@ $campaigns = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}leads_campaigns O
 									<span class="view">
 										<a href="<?php echo esc_url( admin_url( 'admin.php?page=wplm-campaign-detail&id=' . $camp->id ) ); ?>">Ver Detalhes</a> |
 									</span>
-									<?php if ( 'pending' === $camp->status ) : ?>
+									<?php if ( in_array( $camp->status, array( 'pending', 'processing' ), true ) ) : ?>
 										<span class="trash">
-											<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=wplm-campaigns&action=cancel&id=' . $camp->id ), 'wplm_cancel_campaign_' . $camp->id ) ); ?>" class="submitdelete" onclick="return confirm('Tem certeza que deseja cancelar esta campanha?');">Cancelar</a>
+											<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=wplm-campaigns&action=cancel&id=' . $camp->id ), 'wplm_cancel_campaign_' . $camp->id ) ); ?>" class="submitdelete" onclick="return confirm('Tem certeza que deseja cancelar esta campanha (o envio será interrompido)?');">Cancelar</a>
+										</span>
+									<?php elseif ( in_array( $camp->status, array( 'cancelled', 'completed', 'failed' ), true ) ) : ?>
+										<span class="edit">
+											<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=wplm-campaigns&action=retry&id=' . $camp->id ), 'wplm_retry_campaign_' . $camp->id ) ); ?>" onclick="return confirm('Isso criará uma cópia exata desta campanha e iniciará o envio para a mesma lista de leads. Deseja continuar?');" style="color: #2271b1;">Tentar Novamente</a>
 										</span>
 									<?php endif; ?>
 								</div>

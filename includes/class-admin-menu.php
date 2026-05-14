@@ -135,19 +135,30 @@ class Admin_Menu {
 	}
 
 	public static function render_campaign_list() {
-		if ( isset( $_GET['action'] ) && 'cancel' === $_GET['action'] && isset( $_GET['id'] ) ) {
+		global $wpdb;
+
+		if ( isset( $_GET['action'] ) && isset( $_GET['id'] ) ) {
 			$campaign_id = absint( $_GET['id'] );
-			Security::authorize( 'wplm_cancel_campaign_' . $campaign_id );
-			
-			global $wpdb;
-			$wpdb->update(
-				$wpdb->prefix . 'leads_campaigns',
-				array( 'status' => 'cancelled' ),
-				array( 'id' => $campaign_id, 'status' => 'pending' )
-			);
-			
-			Audit_Log::record( 'campaign_cancelled', 'campaign', $campaign_id );
-			echo '<div class="updated"><p>Campanha cancelada com sucesso.</p></div>';
+
+			if ( 'cancel' === $_GET['action'] ) {
+				Security::authorize( 'wplm_cancel_campaign_' . $campaign_id );
+				
+				$wpdb->query( $wpdb->prepare(
+					"UPDATE {$wpdb->prefix}leads_campaigns SET status = 'cancelled' WHERE id = %d AND status IN ('pending', 'processing')",
+					$campaign_id
+				) );
+				
+				Audit_Log::record( 'campaign_cancelled', 'campaign', $campaign_id );
+				echo '<div class="updated"><p>Campanha cancelada com sucesso.</p></div>';
+			} elseif ( 'retry' === $_GET['action'] ) {
+				Security::authorize( 'wplm_retry_campaign_' . $campaign_id );
+				
+				if ( Campaign_Handler::retry_campaign( $campaign_id ) ) {
+					echo '<div class="updated"><p>Campanha duplicada e adicionada à fila de envio com sucesso.</p></div>';
+				} else {
+					echo '<div class="error"><p>Erro ao tentar reenviar a campanha.</p></div>';
+				}
+			}
 		}
 
 		require_once WPLM_PATH . 'admin/views/view-campaign-list.php';

@@ -112,7 +112,7 @@ class Campaign_Handler {
 	/**
 	 * Busca emails e nomes dos destinatários.
 	 */
-	private static function collect_recipients( array $data ): array {
+	public static function collect_recipients( array $data ): array {
 		$recipients = array();
 		$args = array(
 			'post_type'      => CPT_Taxonomy::POST_TYPE,
@@ -197,5 +197,51 @@ class Campaign_Handler {
 			error_log( 'WPLM Error: ' . $e->getMessage() );
 			return 0;
 		}
+	}
+
+	/**
+	 * Duplica e reenvia uma campanha cancelada ou falha.
+	 */
+	public static function retry_campaign( int $old_id ) {
+		$user_id = get_current_user_id();
+
+		global $wpdb;
+		$old = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}leads_campaigns WHERE id = %d", $old_id ) );
+
+		if ( ! $old ) {
+			wp_die( esc_html__( 'Campanha não encontrada.', 'wp-leads-mailer' ) );
+		}
+
+		$data = array(
+			'subject'        => $old->subject,
+			'recipient_type' => $old->recipient_type,
+			'post_ids'       => json_decode( $old->newsletter_ids, true ),
+		);
+
+		$recipient_data = json_decode( $old->recipient_data, true );
+		if ( 'group' === $old->recipient_type ) {
+			$data['group_id'] = absint( $recipient_data );
+		} else {
+			$data['client_ids'] = is_array( $recipient_data ) ? array_map( 'absint', $recipient_data ) : array();
+		}
+
+		$recipients = self::collect_recipients( $data );
+		if ( empty( $recipients ) ) {
+			wp_die( esc_html__( 'Nenhum destinatário válido encontrado para tentar novamente.', 'wp-leads-mailer' ) );
+		}
+
+		$campaign_id = self::create_campaign_transaction( $data, $recipients );
+
+		if ( $campaign_id ) {
+			Rate_Limiter::set_user_lock( $user_id );
+			Audit_Log::record( 'campaign_created', 'campaign', $campaign_id, $data );
+			
+			// Agenda o processamento
+			wp_schedule_single_event( time(), 'wp_leads_process_batch', array( $campaign_id ) );
+
+			return true;
+		}
+
+		return false;
 	}
 }
