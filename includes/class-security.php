@@ -91,7 +91,7 @@ final class Security {
 		}
 
 		// 3. Verificação de Nonce
-		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_key( $_POST['_wpnonce'] ) : '';
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( $_REQUEST['_wpnonce'] ) : '';
 		if ( ! wp_verify_nonce( $nonce, $nonce_action ) ) {
 			wp_die( esc_html__( 'Acesso negado: Token de segurança inválido.', 'wp-leads-mailer' ), 403 );
 		}
